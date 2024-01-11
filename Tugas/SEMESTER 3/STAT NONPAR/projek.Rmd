@@ -1,0 +1,107 @@
+---
+title: "project_uas"
+author: "Richo Wignyo Aji Saputra, Arkan Syafiq At'taqy, Patricia Dewinta"
+date: "2023-12-11"
+output: pdf_document
+---
+
+```{r}
+library(DescTools)
+library(lmtest)
+library(nonpar)
+library(coin)
+setwd("D:/Kuliah/Matkul/Semester 3/Nonpar/Materi/M12")
+data_uas <- read.csv("data_projek.csv")
+head(data_uas)
+```
+
+
+```{r}
+#Uji Kruskal Wallis
+daring_efektivitas <- data_uas$daring_efektivitas 
+prodi <- data_uas$prodi
+kw <- data.frame(daring_efektivitas, prodi)
+
+kruskal.test(daring_efektivitas ~ prodi, data = kw)
+
+```
+```{r}
+
+# Uji Jonckheere-Terpstra
+jt <- list(
+  tsd=c(65,50,50,40,40),
+  ti=c(70,60,50,43,30),
+  te=c(80,80,70,60,50),
+  rn=c(75,68,60,25,60),
+  trkb=c(60,50,50,40,30)
+)
+JonckheereTerpstraTest(jt)
+
+```
+```{r}
+tsd = c(1,1,1,1,1)
+trkb = c(1,0,1,1,1)
+rn = c(1,0,0,1,1)
+ti = c(1,1,1,1,1)
+te = c(1,0,0,1,1)
+data_coch <- data.frame (tsd,trkb,rn,ti,te)
+data_coch
+
+cochrans.q(data_coch)
+
+```
+```{r}
+A <- data_uas$luring_efektivitas
+B <- data_uas$daring_efektivitas
+C <- data_uas$campuran_efektivitas
+p <- data.frame(A,B,C)
+friedman.test(data.matrix(p))
+```
+UJI PERBANDINGAN GANDA
+```{r}
+luring <- data_uas$luring_efektivitas
+daring <- data_uas$daring_efektivitas
+campuran <- data_uas$campuran_efektivitas
+
+data2 <- data.frame(luring, daring, campuran)
+friedman.test(data.matrix(data2))
+
+#Rangking dari masing-masing variabel
+r_luring <- c(1,1,1,3,3,3,3,3,2,2,1,1,2,3,3,1,1,2,1,2,3,3,2,1,2)
+r_daring <- c(2,2,3,2,2,2,2,2,3,3,2,2,3,2,2,2,2,3,2,3,2,2,3,2,3)
+r_campuran <- c(3,3,2,1,1,1,1,1,1,1,3,3,1,1,1,3,3,1,3,1,1,1,1,3,1)
+r1 <- sum(r_luring)
+r1
+r2 <- sum(r_daring)
+r2
+r3 <- sum(r_campuran)
+r3
+
+z = 1.96
+rumus = z*(sqrt((25*3*4)/6))
+rumus
+
+if (abs(r1-r2)>rumus) {
+  print("luring dan daring memberikan perbedaan")
+} else {
+  print("luring dan daring tidak memberikan perbedaan")
+}
+
+if (abs(r1-r3)>rumus) {
+  print("luring dan campuran ada perbedaan")
+} else {
+  print("luring dan campuran tidak ada perbedaan")
+}
+
+if (abs(r2-r3)>rumus) {
+  print("daring dan campuran ada perbedaan")
+} else {
+  print("daring dan campuran tidak ada perbedaan")
+}
+```
+
+```{r}
+# Rank Spearman
+cor.test(data_uas$luring_motivasi, data_uas$luring_pemahaman, method = "spearman", exact = FALSE)
+```
+

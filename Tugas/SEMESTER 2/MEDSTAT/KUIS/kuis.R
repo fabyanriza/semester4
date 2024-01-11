@@ -1,0 +1,12 @@
+library(readxl)
+height <- read_excel("D:/Tugas/SEMESTER 2/MEDSTAT/height.xlsx", 
+                     col_types = c("numeric", "numeric"))
+
+
+tinggi = height$Height
+berat = height$Weight
+
+cor.test(tinggi,berat, method = 'pearson')
+cor.test(tinggi,berat, method = 'spearman')
+cor.test(tinggi,berat, method = 'kendall')
+  

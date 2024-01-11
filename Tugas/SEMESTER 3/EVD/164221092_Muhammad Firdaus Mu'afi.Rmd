@@ -1,0 +1,333 @@
+---
+title: "Tugas EVD M4"
+author: "Fabyan Riza Kiram"
+date: "`r Sys.Date()`"
+output: html_document
+---
+## Import Data
+```{r}
+library(readr)
+Salaries <- read.csv("Salaries.csv")
+Salaries
+```
+## Load Data
+```{r}
+data(CPS85 , package = "mosaicData")
+```
+## Menentukan dataset dan mapping data
+```{r}
+library(ggplot2)
+ggplot(data = CPS85,
+       mapping = aes(x = exper, y = wage))
+```
+## Geoms (Geometry Object)
+```{r}
+ggplot(data = CPS85,
+       mapping = aes(x = exper, y = wage)) + 
+  geom_point()
+```
+### Delete Outlier
+```{r}
+library(dplyr)
+plotdata <- filter(CPS85, wage < 40)
+```
+##Memodifikasi color, transparency, dan size
+```{r}
+ggplot(data = plotdata,
+       mapping = aes(x = exper, y = wage)) +
+  geom_point(color = "green",
+             alpha=.7,
+             size = 1)
+```
+## Grouping
+```{r}
+ggplot(data = plotdata,
+        mapping = aes(x=exper,
+                      y=wage,
+                      color = sex))+
+         geom_point(alpha = 0.7,
+                    size = 1) + 
+         geom_smooth(method = "lm",
+                     se = FALSE,
+                     size = 1.5)
+```
+## Facets
+```{r}
+ggplot(data = plotdata,
+       mapping = aes(x = exper,
+                     y = wage,
+                     color = sex)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm",
+              se = FALSE) +
+  scale_x_continuous(breaks = seq(0, 60,10)) +
+  scale_y_continuous(breaks = seq(0, 30,5),
+                    labels = scales::dollar) +
+  scale_color_manual(values = c("indianred3",
+                                "cornflowerblue")) +
+  facet_wrap(~sector)
+```
+## Labels
+```{r}
+ggplot(data = plotdata,
+       mapping = aes(x = exper,
+                     y = wage,
+                     color = sex)) +
+  geom_point((alpha = 0.7) +
+               geom_smooth(method = "lm") +
+  scale_x_continuous(breaks = seq(0,60,10)) +
+  scale_y_continuous(breaks = seq(0, 30, 5),
+                     label = scales::dollar)) +
+  scale_color_manual(values = c("indianred3",
+                                "cornflowerblue")) +
+  facet_wrap(~sector) +
+  labs(title = "Relationship beetween wages and experience",
+       subtitle = "Current Population Survey",
+       caption = "source: http//mosaic-web.org/",
+       x = " Years of Experience",
+       y = "Hourly Wage",
+       color = "Gender")
+```
+
+# Jenis-Jenis Grafik
+## Grafik Univariat
+
+### 1. Kategorik
+#### a. bar Charts(Diagram Batang)
+
+```{r}
+library(ggplot2)
+data(Marriage, package = "mosaicData")
+
+data(Marriage,aes(x=Race)) +
+  geom_bar()
+```
+```{r}
+ggplot(Marriage, aes(x = race)) + 
+         geom_bar(fill ="cornflowerblue",
+                  color = "black") +
+  labs(x = "Race",
+       y = "Frequency",
+       title = "Participants by race")
+```
+
+Diagram batang Horizontal:
+
+```{r}
+ggplot(Marriage, aes(x = officialTitle)) +
+  geom_bar() +
+  labs(x = "",
+       title = "Marriage by officate") +
+  coord_flip()
+```
+
+#### b. Pie Chart (Diagram Lingkaran)
+```{r}
+plotdata <- Marriage %>%
+
+  count(race) %>%
+  arrange(desc(race)) %>%
+  mutate(prop = round(n * 100 / sum(n), 1),
+         lab.ypos = cumsum(prop) - 0.5 *prop)
+
+  ggplot(plotdata,
+  aes(x = "",
+      y = prop,
+      fill = race))+
+    geom_bar(width = 1,
+             stat = "identity",
+             color = "black") +
+    coord_polar("y",
+                start = 0,
+                direction = -1) +
+    theme_void()
+```
+
+### 2. Kuantitatif
+#### Histogram
+```{r}
+ggplot(Marriage, aes(x = age))+
+         geom_histogram() +
+  labs(title = "participants by age",
+       x = "Age")
+```
+
+```{r}
+ggplot(Marriage, aes(x = age)) +
+  geom_histogram(fill = "cornflowerblue",
+                         color = "white") +
+  labs(title = "participants by age",
+       x = "Age")
+                          
+```
+
+#### b. Kernel Density Plot
+```{r}
+ggplot(Marriage, aes(x = age)) +
+  geom_density(fill = "indianred3") +
+  labs(title = "participants by age")
+```
+
+### 3. Dot Chart
+```{r}
+ggplot(Marriage, aes(x = age)) +
+  geom_dotplot(fill = "gold",
+               color = "black") +
+  labs(title = "Participants by age",
+       y = "Proportion",
+       x = 'Age')
+```
+
+## Grafik Bivariat
+### 1. Categorical vs Categorical
+#### a. Stacked Bar Chart
+```{r}
+ggplot(mpg,
+       aes(x = class,
+           fill = drv)) +
+         geom_bar(position = "stack")
+```
+
+#### b. Grouped Bar Chart
+```{r}
+ggplot(mpg,
+       aes(x = class,
+           fill = drv)) +
+  geom_bar(position = "dodge")
+```
+
+#### Segmented Bar Chart
+```{r}
+ggplot(mpg,
+       aes(x = class,
+           fill = drv)) +
+  geom_bar(position = "fill") +
+  labs(y = "proportion")
+```
+
+### 2. Quantitative vs Quantitative
+#### a. Scatter Plot
+```{r}
+ggplot(Salaries,
+       aes(x = yrs.since.phd,
+           y = salary)) +
+  geom_point(color = "cornflowerblue")
+```
+
+#### b. Line Graph
+```{r}
+data(gapminder,package="gapminder")
+
+library(dplyr)
+plotdata <- filter(gapminder,
+                   country == "United States")
+```
+```{r}
+ggplot(plotdata,
+       aes(x = year,
+           y = lifeExp)) +
+  geom_line(size = 1.5,
+            color = "lightgrey") +
+  geom_point(size = 3,
+             color = "steelblue") +
+  labs(y = "life Expetancy (years)",
+       x = "year",
+       title = "Life Expetancy change over time",
+       subtitle = "United States (1952-2007)",
+       caption = "Source: http//www.apminder.org/data/")
+
+```
+
+### 3. Categorical vs Quantitative
+#### a. Bar Chart (On Summary Statistics)
+```{r}
+library(dplyr)
+plotdata <- Salaries %>%
+  group_by(rank) %>%
+  summarize(mean_salary = mean(salary))
+
+```
+```{r}
+ggplot(plotdata,
+       aes(x = rank,
+           y = mean_salary)) +
+  geom_bar(stat = "identity")
+```
+```{r}
+library(scales)
+library(ggplot2)
+ggplot(plotdata,
+       aes(x = factor(rank,
+                      labels = c("Assistant\nProffessor",
+                                 "Associate\nProffessor",
+                                 "Full\nProffessor")),
+                      y = mean_salary)) +
+  geom_bar(stat = "identity",
+           fill = "cornflowerblue") +
+  geom_text(aes(label = dollar(mean_salary)),
+            vjust = -0.25) +
+  scale_y_continuous(breaks = seq(0,130000, 20000),
+                     label = dollar) +
+  labs(title = "Mean Salary by rank",
+       subtitle = "9-month academic salary for 2008-2009",
+       x = "",
+       y = "")
+
+```
+
+#### b. Grouped Kernel Density Plots
+
+```{r}
+ggplot(Salaries,
+       aes(x = salary,
+           fill = rank)) +
+  geom_density(alpha = 0.4) +
+  labs(title = "Salary distribution by rank")
+```
+
+#### c. BoxPlot
+
+```{r}
+ggplot(Salaries, aes(x = rank,
+                     y = salary)) +
+  geom_boxplot(notch = TRUE,
+               fill = "cornflowerblue",
+               alpha = 0.7) +
+  labs(title = "Salary distribution by rank")
+```
+
+#### Ridge plots (joyplot)
+
+```{r}
+library(ggplot2)
+library(ggridges)
+
+ggplot(mpg,
+       aes(x = cty,
+           y = class,
+           fill = class)) +
+  geom_density_ridges() +
+  theme_ridges() +
+  labs("Highway mileage by auto class") +
+  theme(legend.position = "none")
+```
+
+#### e. Cleveland Dot Charts
+
+```{r}
+data(gapminder, package="gapminder")
+
+library(dplyr)
+plotdata <- gapminder %>%
+  filter(continent == "Asia" &
+           year == 2007)
+
+ggplot(plotdata,
+       aes(x = lifeExp, y = country)) +
+  geom_point()
+
+ggplot(plotdata,
+       aes(x = lifeExp, y = country)) +
+  geom_point()
+```
+

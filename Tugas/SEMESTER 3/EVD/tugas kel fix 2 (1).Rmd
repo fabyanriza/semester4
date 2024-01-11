@@ -1,0 +1,246 @@
+---
+title: "Tugas Kelompok 2"
+author: "Kelompok S"
+date: "2023-09-26"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+Nama Kelompok :
+
+-   Andreas Hendra Herwanto (164221064)
+
+-   Fabyan Riza Kiram (164221068)
+
+-   Octaviani Putri Al Fajri (164221042)
+
+
+## Data Source
+
+<https://www.kaggle.com/datasets/ibrahimelsayed182/plane-ticket-price>
+
+
+## Data Description
+
+1 . ID: Contiguous sample number
+
+2 . Airline: The name of the airline
+
+3 . DateofJourney: The date of the journey
+
+4 . Source: The source from which the service begins
+
+5 . Destination: The destination where the service ends
+
+6 . Dep_Time: The time when the journey starts from the source.
+
+7 . Arrival_Time: Time of arrival at the destination.
+
+8 . Duration: Total duration of the flight.
+
+9 . Total_Stops: Total stops between the source and destination.
+
+10 . Additional_Info: Additional information about the flight
+
+11 . Price: The price of the ticket
+
+## Import Data
+
+```{r}
+setwd("D:/KULIAH/Tugas/SEMESTER 3/EVD")
+
+library(readr)
+
+df=read_csv("plane.csv")
+head(df)
+```
+
+## Variabel Selection
+```{r}
+library(dplyr)
+
+df_clear<-select(df,-c("Date_of_Journey","Route","Dep_Time","Arrival_Time","Duration","Additional_Info"))
+head(df_clear)
+```
+
+## Checking Missing Value
+```{r}
+missing_values_per_column <- colSums(is.na(df_clear))
+missing_values_per_column
+
+```
+
+## Label Encoding
+```{r}
+library(CatEncoders)
+
+df_encoding<-data.frame(df_clear)
+
+labs1 = LabelEncoder.fit(df_encoding$Airline)
+labs2 = LabelEncoder.fit(df_encoding$Source)
+labs3 = LabelEncoder.fit(df_encoding$Destination)
+
+df_encoding$Airline <- transform(labs1, df_encoding$Airline)
+df_encoding$Source <- transform(labs2, df_encoding$Source)
+df_encoding$Destination <- transform(labs3, df_encoding$Destination)
+
+df_encoding
+```
+
+## Correlation Table
+
+```{r}
+library(corrplot)
+corrplot(cor(df_encoding),
+         order = "hclust",
+         tl.col="black", 
+         tl.srt=45, 
+         method = "number") 
+```
+**Keterangan :**
+
+-   Nilai korelasi negatif : Kedua variabel memiliki hubungan yang berlawanan.
+
+-   Nilai korelasi positif : Kedua variabel memiliki hubungan yang searah.
+
+-   Nilai korelasi antara 0 -- 0,25 : Korelasi sangat lemah
+
+-   Nilai korelasi antara 0,25 -- 0,5 : Korelasi cukup
+
+-   Nilai korelasi antara 0,5 -- 0,75 : Korelasi kuat
+
+-   Nilai korelasi antara 0,75 -- 0,99 : Korelasi sangat kuat
+
+-   Nilai korelasi antara 1 atau -1 : Korelasi hubungan sempurna
+
+## EDA
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(ggrepel)
+```
+
+1. Proporsi Jumlah Tiket dari Setiap Maskapai
+
+```{r}
+plotdata<-df %>%
+  count(Airline) %>%
+  arrange(desc(Airline)) %>%
+  mutate(prop = round(n*100/sum(n),1),
+         lab.ypos=cumsum(prop)-0.5*prop)
+
+ggplot(plotdata,aes(x="",y=prop, fill=Airline))+
+  geom_bar(width=1,
+           stat="identity",
+           color="black",
+           alpha=0.8)+
+  coord_polar('y', start=0,
+              direction=-1)+
+  theme_void()+
+  labs(title= "Proporsi Jumlah Tiket dari Setiap Maskapai")+
+  theme(plot.title = element_text(hjust = 0.8, vjust=-5))+
+  theme_void()+
+  scale_fill_brewer(palette = "Set3")+
+  geom_label_repel(aes(y = lab.ypos, label = paste(n, "(", prop, "%)")), 
+                   size = 3.5,nudge_x = 0.7)
+```
+**Interpretasi :**
+Dilihat dari pie chart, bahwa tiket penerbangan paling banyak adalah pie berwarna biru dengan persentase 36 yaitu maskapai Jet Airways. Untuk tiket terbanyak kedua ada dari maskapai IndiGo dengan persentase 19.2. Terdapat dua maskapai dengan persentase 0, yaitu maskapai Trujet dan Vistara Premium economy karena hanya memiliki jumlah penerbangan sebanyak 1 dan 3.
+
+
+2. Source dan Destinasi Penerbangan di India selama 2019
+```{r}
+ggplot(df, aes(y=Source, fill=Destination))+
+  geom_bar()+
+  labs(title="Penerbangan Maskapai India Selama 2019")+
+  scale_fill_brewer(palette = "Set3")
+
+```
+**Interpretasi :**
+Penerbangan paling banyak dilakukan dari Delhi ke Cochin, yaitu lebih dari 4500. Penerbangan paling banyak kedua ada dari Kolkata dengan tujuan Banglore sebanyak kurang lebih 2800 penerbangan. Sedangkan penerbangan paling sedikit yaitu dari Chennai ke Kolkata. Penerbangan dari Mumbai menuju Hyderabad menjadi penerbangan tersedikit kedua pada tahun tersebut.
+
+
+3. Density Variabel Dependen (Price(Rupee))
+```{r}
+a<-ggplot(df, aes(`Price(Rupee)`))+
+  geom_histogram(aes(y = ..density..),
+                 fill = "#EEDD82",
+                 alpha=0.8)+
+  geom_density(color='black',lwd=0.5)+
+  labs(title="Distribusi Biaya Asuransi (Charges)")+
+  theme(plot.title = element_text(hjust = 0.8))
+
+b<-ggplot (df, aes(y=`Price(Rupee)`)) +
+  geom_boxplot (fill = "#EEDD82",
+                alpha = 0.6,
+                outlier.size=2,
+                varwidth=TRUE) +
+  labs (title = "Charges distribution")
+
+
+library(gridExtra)
+grid.arrange(a, b, ncol = 2)
+```
+**Interpretasi :**
+Visualisasi diatas menunjukkan distribusi harga tiket pesawat menggunakan 2 plot sekaligus. Dapat dilihat pada plot pertama (density plot), distribusi density plot sangat miring ke arah kanan (positive skewness). Dan penyebab kemiringan tersebut dapat dilihat melalui plot kedua (box plot),yang mana menunjukkan bahwa data memiliki banyak outlier dan membuat distribusi menjadi miring
+
+
+
+4. Trend Harga Tiket Maskapai di India selama 2019
+
+```{r}
+
+data <- data.frame(
+  Date = as.Date(df$Date_of_Journey, "%d/%m/%Y"),
+  Price = df$`Price(Rupee)`)
+
+test = aggregate(`Price(Rupee)`~Date_of_Journey,df,mean)
+
+# Create a line chart with multiple lines (one line per flight)
+ggplot(test, aes(x = as.Date(Date_of_Journey, "%d/%m/%Y"), y = `Price(Rupee)`))+
+  geom_line(lwd=0.6, color="#EE2C2C") +
+  labs(
+    title = "Line Chart of Price Over Time for Multiple Flights",
+    x = "Date",
+    y = "Price")
+
+```
+**Interpretasi :**
+Pada bulan Maret, tiket penerbangan memiliki harga tertinggi yang dapat disebabkan oleh Holi day (hari perayaan di India). Lalu menurun sampai bulan April. Kembali naik saat bulan May dan cenderung stabil kenaikan dan penurunannya hingga Juni. Dari grafik, harga terendah dari tiket penerbangan ada pada bulan April.
+
+
+5.  Plot Price vs Total Stops and Price vs Duration (Hour)
+
+```{r}
+plotdata5 <- df%>%
+  group_by(Total_Stops)%>%
+  summarize(max=max(`Price(Rupee)`))
+
+a1<-ggplot(plotdata5, aes(x=Total_Stops, y=max))+
+  geom_bar(stat="identity", fill="lightskyblue")+
+  labs(title="Price(Rupee) vs Total Stops",
+       y= "Price(Rupee)")
+
+b1<-ggplot(df, aes(x=`Duration(Hour)`, y=`Price(Rupee)`))+
+  geom_point(color="#FFA07A", size=1.3)+
+  labs(title="Price(Rupee) vs Duration (Hour)")
+
+library(gridExtra)
+grid.arrange(a1, b1, ncol = 2)
+```
+**Interpretasi :**
+Dibandingkan dari jumlah stop(transit), harga paling tinggi berada pada penerbangan dengan 1 kali stop. Semakin banyak stop yang dilakukan, harga semakin menurun. Untuk penerbangan non-stop(0), memiliki harga lebih rendah dari penerbangan 1 kali dan 2 kali stop.
+Terdapat banyak outlier yang terlihat pada scatter plot perbandingan dengan durasi penerbangan yang disajikan. Harga cenderung berkumpul pada rentang 1759-20000 pada durasi penerbangan kurang dari 1 jam hingga 40 jam.
+Meski secara logis, bisa dibilang harga penerbangan non-stop seharusnya lebih tinggi dari harga penerbangan dengan 1 kali stop. Namun, dari data yang tersedia variabel yang mempengaruhi harga penerbangan bukanlah hanya dari total stop dan durasi penerbangan.
+
+
+6. Perbadingan Harga Setiap Maskapai
+```{r}
+ggplot(df,aes(x=`Price(Rupee)`,y=Airline))+
+  geom_boxplot(alpha=.7,  outlier.size=1, color="#CD2626")+
+  labs(title = "Price distribution by Airline")
+```
+**Interpretasi :**
+Berikut adalah distribusi harga tiket berdasarkan maskapai. Maskapai SpiceJet, Jet Airways, IndiGo, dan Air India memiliki banyak outlier. Untuk maskapai Trujet hanya menunjukkan satu garis lurus karena hanya terdapat satu penerbangan. Lalu dibandingkan dengan maskapai lain, maskapai Jet Airways Business memiliki harga yang sangat jauh di atasnya.

@@ -1,0 +1,88 @@
+---
+title: "Tugas M3_Fabyan Riza Kiram_164221068"
+author: "Fabyan Riza Kiram"
+date: "2023-09-19"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+
+## Mengambil dataset dari sebuah file dan mendeklarasikan beberapa variabel
+
+```{r echo=TRUE}
+df = read.csv("concrete_data.csv")
+
+semen = df$Cement
+ampas = df$Blast.Furnace.Slag
+abu = df$Fly.Ash
+air = df$Water
+kekakuan = df$Superplasticizer
+sifat_kasar = df$Coarse.Aggregate
+kehalusan = df$Fine.Aggregate
+umur = df$Age
+kekuatan = df$Strength
+```
+
+# Menggunakan fungsi library ggplot
+
+## __Scatter Plot__
+
+```{r}
+library(ggplot2)
+qplot(air, kekakuan, data = df, colour=ampas) + geom_point(size=3)
+```
+
+## Interpretasi
+Pada visualisasi diatas, dapat dilihat bahwa terdapat korelasi di antara jumlah air yang terkandung di dalam semen dan juga kekakuan semen tersebut. Hubungan yang ada merupakan korelasi negatif, maka makin banyak air, makin kecil kekakuan dari semen (makin tidak kaku) dan juga sebaliknya. Dapat dilihat juga terdapat pola bahwa jumlah ampas semen akan sedikit jika semen hanya mengandung salah satu variabel yang tertera di atas (jumlah air banyak tanpa ada nilai kekakuan / nilai kekakuan yang tinggi dengan jumlah air yang sedikit) 
+
+
+## __Box Plot__
+
+```{r}
+qplot(factor(umur), kekuatan, data = df, geom = ("boxplot")) 
+```
+
+## Interpretasi
+
+Pada visualisasi di atas, terdapat 2 variabel dimana umur merupakan variabel independen dan kekuatan semen merupakan variabel dependen. Dapat dilihat bahwa data menunjukkan  kekuatan semen pada saat berumur 7 - 56 tahun sangatlah tersebar, sedangkan makin lama umur dari semen maka makin kecil pula persebaran data kekuatan semen / kekuatan semen makin mudah diprediksi.
+
+## __Density Plot__
+
+```{r}
+ggplot(df, aes(x=air)) +
+  geom_density(
+    color="purple",
+    fill="#69b3a2",
+    size = 2
+  )
+```
+
+## Interpretasi
+Visualisasi diatas menunjukkan berapa jumlah kandungan air yang sering digunakan menggunakan density plot. Dapat dilihat bahwa dalam pembuatan semen, banyaknya kandungan air yang digunakan ada pada rentang 200 L
+
+
+
+# Menggunakan fungsi bawaan R
+
+## __Histogram__
+
+```{r}
+hist(kekuatan)
+```
+
+## Interpretasi
+
+Visualisasi diatas merupakan histogram, dimana variabel yang digunakan adalah nilai 'kekuatan' dari semen. Histogram berfungsi untuk memberikan distribusi dari variabel yang telah ditentukan. Dapat dilihat bahwa persebaran kekuatan semen menyerupai distribusi normal meskipun terdapat kemiringan (skewness) di bagian kanan.
+
+
+## __Scatter Plot__
+
+```{r}
+plot(kekuatan,sifat_kasar)
+```
+
+## Interpretasi
+
+Dalam visualisasi di atas (scatter plot) dapat dilihat bahwa tidak ada korelasi khusus di antara kekuatan semen dan sifat kasar dari semen tersebut. Artinya kekuatan (variabel independen) tidak mempengaruhi nilai dari sifat kekasaran semen (variabel dependen)

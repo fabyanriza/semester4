@@ -1,0 +1,8 @@
+```{r}
+setwd("D:/KULIAH/Tugas/SEMESTER 3/STAT NONPAR")
+```
+```{r}
+df = read.csv("data_projek.csv")
+df
+```
+
